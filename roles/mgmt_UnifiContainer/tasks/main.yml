@@ -1,0 +1,129 @@
+---
+# tasks file for mgmt_UnifiContainer
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+# TODO: task to copy init-mongo.js to svr-unifi
+#
+################################################
+#
+#################################################
+- name: Create container network task
+  block:
+    - name: Create container network section
+      containers.podman.podman_network:
+        name: unifi_net
+      become: true
+  tags:
+    - crtMongoDB
+    - crtUnifi
+#################################################
+#
+#################################################
+- name: Create unifi mongodb container task
+  block:
+    - name: Create unifi mongodb container section
+      containers.podman.podman_container:
+        name: c_mongodb
+        image: docker.io/mongo:7.0.4
+        hostname: c_svr-mongodb
+        volume:
+          - /data/db
+          - /root/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+        ports:
+          - 27017:27017
+        network:
+          - unifi_net
+        # env:
+        #   MONGO_INITDB_ROOT_USERNAME: root
+        #   MONGO_INITDB_ROOT_PASSWORD: Sa55icajA
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+  # Tags
+  tags:
+    - crtMongoDB
+- name: Create unifi container task
+  block:
+    - name: Create unifi container section
+      containers.podman.podman_container:
+        name: c_unifi
+        image: lscr.io/linuxserver/unifi-network-application:latest
+        hostname: c_svr-unifi
+        volume:
+          - /config
+        ports:
+          - "1900:1900/udp" # optional
+          - "3478:3478/udp"
+          - "5514:5514/udp" # optional
+          - "6789:6789/tcp" # optional
+          - "8080:8080/tcp"
+          - "8443:8443/tcp" # optional
+          - "8880:8880/tcp" # optional
+        network:
+          - unifi_net
+        env:
+          PUID: 1000
+          PGID: 1000
+          TZ: EtC/UTC
+          MONGO_USER: unifi_user
+          MONGO_PASS: Sa55icajA
+          MONGO_HOST: c_mongodb
+          MONGO_PORT: 27017
+          MONGO_DBNAME: unifidb
+          MEM_LIMIT: 1024 # optional
+          MEM_STARTUP: 1024 # optional
+          # MONGO_TLS: ??? # optional
+          # MONGO_AUTHSOURCE: ??? # optional
+        requires: c_mongodb
+        recreate: true
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+  # Tags
+  tags:
+    - crtUnifi
+
+
+################################################
+#
+#################################################
+- name: Open ports for unifi task
+  block:
+    - name: Open ports for unifi section
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+      loop:
+        - "1900/udp"
+        - "3478/udp"
+        - "5514/udp"
+        - "6789/tcp"
+        - "8080/tpc"
+        - "8443/tcp"
+        - "8880/tcp"
+  # Tags
+  tags:
+    - opnPorts
+#################################################
+#
+#################################################
+- name: Check firewall task
+  block:
+    - name: Check firewall section
+      ansible.builtin.shell: firewall-cmd --list-all
+      register: FirewallCheck
+    - name: Print FirewallCheck
+      debug:
+        msg:
+          - "<<<<< Firewall settings >>>>>"
+          - "{{ FirewallCheck.stdout_lines }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - chkFirewall

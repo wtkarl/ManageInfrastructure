@@ -1,0 +1,208 @@
+---
+# tasks file for mgmt_SemaphoreContainer
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+#
+################################################
+#
+#################################################
+- name: Create container network task
+  block:
+    - name: Create container network section
+      containers.podman.podman_network:
+        name: semaphore_net
+      become: true
+  tags:
+    - crtMariaDB
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags delImage
+#
+#################################################
+- name: Delete image file task
+  block:
+    - name: Delete image file section
+      containers.podman.podman_network:
+        name: docker.io/mariadb
+        state: absent
+  # Tags
+  tags:
+    - delImage
+    - updMariaDB
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags crtMariaDB
+#
+#################################################
+- name: Create unifi MariaDB container task
+  block:
+    - name: Create unifi MariaDB container section
+      containers.podman.podman_container:
+        name: c_mdb_semaphore
+        image: docker.io/mariadb:10
+        hostname: svr-mdb_smaphore
+        volumes:
+          - semaphore-mysql:/var/lib/mysql
+        ports:
+          - 3306:3306
+        network:
+          - semaphore_net
+        env:
+          MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+          MARIADB_DATABASE: semaphore
+          MARIADB_USER: semaphore
+          MARIADB_PASSWORD: S#55ic#jA
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: MariaDBOutputStart
+    - name: Print MariaDBOutputStart
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ MariaDBOutputStart }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtMariaDB
+    - updMariaDB
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags crtSemaphore
+# does not work with ssh:// or local path in container
+#
+#################################################
+- name: Create semaphore container task
+  block:
+    - name: Create semaphore container section
+      containers.podman.podman_container:
+        name: c_semaphore
+        image: docker.io/semaphoreui/semaphore:latest
+        hostname: c_svr-semaphore
+        volume:
+          - /home/myadmin/ansible:/home/semaphore/.ansible/tmp
+          - /usr/bin/ansible-playbook:/usr/bin/ansible-playbook
+        ports:
+          - "3000:3000/tcp"
+        network:
+          - semaphore_net
+        env:
+          SEMAPHORE_DB_USER: semaphore
+          SEMAPHORE_DB_PASS: S#55ic#jA
+          SEMAPHORE_DB_HOST: c_mdb_semaphore # for postgres, change to: postgres
+          SEMAPHORE_DB_PORT: 3306 # change to 5432 for postgres
+          SEMAPHORE_DB_DIALECT: mysql
+          SEMAPHORE_DB: semaphore
+          SEMAPHORE_PLAYBOOK_PATH: /home/semaphore/.ansible/tmp
+          SEMAPHORE_ADMIN_PASSWORD: S#55ic#jA
+          SEMAPHORE_ADMIN_NAME: myadmin
+          SEMAPHORE_ADMIN_EMAIL: myadmin@localhost
+          SEMAPHORE_ADMIN: myadmin
+          # SEMAPHORE_ACCESS_KEY_ENCRYPTION: gs72mPntFATGJs9qK0pQ0rKtfidlexiMjYCH9gWKhTU=
+          SEMAPHORE_LDAP_ACTIVATED: 'no' # if you wish to use ldap, set to: 'yes'
+          # SEMAPHORE_LDAP_HOST: dc01.local.example.com
+          # SEMAPHORE_LDAP_PORT: '636'
+          # SEMAPHORE_LDAP_NEEDTLS: 'yes'
+          # SEMAPHORE_LDAP_DN_BIND: 'uid=bind_user,cn=users,cn=accounts,dc=local,dc=shiftsystems,dc=net'
+          # SEMAPHORE_LDAP_PASSWORD: 'ldap_bind_account_password'
+          # SEMAPHORE_LDAP_DN_SEARCH: 'dc=local,dc=example,dc=com'
+          # SEMAPHORE_LDAP_SEARCH_FILTER: "(u0026(uid=%s)(memberOf=cn=ipausers,cn=groups,cn=accounts,dc=local,dc=example,dc=com))"
+        requires: c_mdb_semaphore
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: SemaphoreOutputStart
+    - name: Print SemaphoreOutputStart
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ SemaphoreOutputStart }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - crtSemaphore
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags stpSemaphore
+#
+#################################################
+- name: Stop semaphore container task
+  block:
+    - name: Stop semaphore container section
+      containers.podman.podman_container:
+        name: c_semaphore
+        debug: false
+        state: stopped
+      register: SemaphoreOutputStop
+    - name: Print SemaphoreOutputStop
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ SemaphoreOutputStop }}"
+        verbosity: 2
+  # Tags
+  tags:
+    - stpSemaphore
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags rmvSemaphore
+#
+#################################################
+- name: Remove semaphore container task
+  block:
+    - name: Remove semaphore container section
+      containers.podman.podman_container:
+        name: c_semaphore
+        debug: false
+        state: absent
+      register: SemaphoreOutputRemove
+    - name: Print SemaphoreOutputRemove
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ SemaphoreOutputRemove }}"
+        verbosity: 2
+  # Tags
+  tags:
+    - rmvSemaphore
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags opnPorts
+#
+#################################################
+- name: Open ports for semaphore task
+  block:
+    - name: Open ports for semaphore section
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+      loop:
+        - "3000/tcp"
+  # Tags
+  tags:
+    - opnPorts
+# #################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags chkFirewall
+#
+# #################################################
+- name: Check firewall task
+  block:
+    - name: Check firewall section
+      ansible.builtin.shell: firewall-cmd --list-all
+      register: FirewallCheck
+    - name: Print FirewallCheck
+      debug:
+        msg:
+          - "<<<<< Firewall settings >>>>>"
+          - "{{ FirewallCheck.stdout_lines }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - chkFirewall

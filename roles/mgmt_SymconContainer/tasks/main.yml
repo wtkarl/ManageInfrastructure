@@ -1,0 +1,115 @@
+---
+# tasks file for mgmt_SymconContainer
+#
+# Author: Walter Karl
+# Date: September.2022
+# Company:
+#
+#
+#################################################
+#
+#################################################
+- name: Create symcon container task
+  block:
+    - name: Create symcon container section
+      containers.podman.podman_container:
+        name: c_symcon
+        image: docker.io/symcon/symcon:stable
+        hostname: c_svr-symcon
+        volume:
+          - /var/lib/symcon
+          - /var/log/symcon
+          - /root
+        ports:
+          - "554:554/tcp"
+          - "2000-2001:2000-2001/tcp"
+          - "2010:2010/tcp"
+          - "3777:3777/tcp"
+          - "5544:5544/tcp"
+          - "8181:8181/tcp"
+          - "42000:42000/tcp"
+          - "42010:42010/tcp"
+          - "48181:48181/tcp"
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+  # Tags
+  tags:
+    - crtSymcon
+#################################################
+#
+#################################################
+- name: Stop symcon container task
+  block:
+    - name: Stop symcon container section
+      containers.podman.podman_container:
+        name: c_symcon
+        debug: false
+        state: stopped
+      register: SymconOutput
+    - name: Print SymconOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ SymconOutput }}"
+        verbosity: 2
+  # Tags
+  tags:
+    - stpSymcon
+#################################################
+#
+#################################################
+- name: Remove symcon container task
+  block:
+    - name: Remove symcon container section
+      containers.podman.podman_container:
+        name: c_symcon
+        debug: false
+        state: absent
+  # Tags
+  tags:
+    - rmvSymcon
+#################################################
+#
+#################################################
+- name: Open ports for symcon task
+  block:
+    - name: Open ports for symcon section
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+      loop:
+        - "554/tcp"
+        - "2000/tcp"
+        - "2001/tcp"
+        - "2010/tcp"
+        - "3777/tcp"
+        - "5544/tcp"
+        - "8181/tcp"
+        - "42000/tcp"
+        - "42010/tcp"
+        - "48181/tcp"
+        - "443/tcp" #for IPSConnect
+  # Tags
+  tags:
+    - opnPorts
+#################################################
+#
+#################################################
+- name: Check firewall task
+  block:
+    - name: Check firewall section
+      ansible.builtin.shell: firewall-cmd --list-all
+      register: FirewallCheck
+    - name: Print FirewallCheck
+      debug:
+        msg:
+          - "<<<<< Firewall settings >>>>>"
+          - "{{ FirewallCheck.stdout_lines }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - chkFirewall

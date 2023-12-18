@@ -1,0 +1,15 @@
+#
+# To install collections run
+# ansible-galaxy collection install <collection-name>
+#
+# !!! To use json_query run on CLI
+# !!! pip install jmespath
+# !!! also install
+# !!! ansible-galaxy collection install community.general
+# 
+# collections used:
+#   - ansible.builtin
+#   - community.general
+#
+# use long name for modules > transparenz regarding collections
+#

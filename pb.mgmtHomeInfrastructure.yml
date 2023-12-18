@@ -1,0 +1,83 @@
+---
+#
+# Author: Walter Karl
+# Date: September.2023
+# Company: 
+#
+# Prerequisites
+# ansible-galaxy collection install containers.podman
+# ansible-galaxy collection install community.general
+# ansible-galaxy collection install ansible.posix
+# ansible-galaxy collection install community.mongodb
+#
+#
+- name: Manage Home Infrastructure
+  hosts: localhost
+  strategy: free
+  #
+  # vars_files:
+  #   - './global_vars/defvars.yml'
+  #
+  gather_facts: FALSE
+  #  
+  # vars:
+  #   domain: home.lcl
+  #
+  # module_defaults:
+  #   uri:
+  #     validate_certs: no
+  #     body_format: json
+  #     status_code: 200, 201
+  #     return_content: yes
+  #
+  roles:
+    ###############################################
+    # podman container management
+    ###############################################
+    - role: mgmt_SymconContainer
+      delegate_to: svr-symcon
+      # vars:
+      #   ansible_user: myadmin
+      #   ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
+      #   ansible_become: true
+      #   ansible_become_user: root
+      #   ansible_become_password: S#55ic#jA
+      when: v_role == "symcon"
+    - role: mgmt_UnifiContainer
+      delegate_to: svr-unifi
+      # vars:
+      #   ansible_user: myadmin
+      #   ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
+      #   ansible_become: true
+      #   ansible_become_user: root
+      #   ansible_become_password: S#55ic#jA
+      when: v_role == "unifi"
+    - role: mgmt_SemaphoreContainer
+      delegate_to: svr-toolz
+      when: v_role == "semaphore"
+    ###############################################
+    # physical or virtual deployment
+    ###############################################
+    - role: mgmt_Wazuh
+      delegate_to: svr-toolz
+      # delegate_to: svr-unifi
+      # delegate_to: svr-symcon
+      vars:
+        ansible_user: myadmin
+        ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
+        ansible_become: true
+        ansible_become_user: root
+        ansible_become_password: S#55ic#jA
+      when: v_role == "wazuh"
+    #################################################
+    # This solution is bullshit
+    #################################################
+    # - role: mgmt_Guacamole
+    #   delegate_to: localhost
+    #   vars:
+    #     ansible_user: myadmin
+    #     ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
+    #     ansible_become: true
+    #     ansible_become_user: root
+    #     ansible_become_password: S#55ic#jA
+    #   when: v_role == "guacamole"

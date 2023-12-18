@@ -1,0 +1,162 @@
+---
+# tasks file for mgmt_Guacamole
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+#
+################################################
+#
+#################################################
+- name: Create network
+  containers.podman.podman_network:
+    name: guacamole_net
+  become: true
+  tags:
+    - crtMariaDB
+    - crtGuac
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=guacamole" --tags crtMariaDB
+#
+#################################################
+- name: Create guacamole MariaDB container task
+  block:
+    - name: Create guacamole MariaDB container section
+      containers.podman.podman_container:
+        name: c_mdb_guacamole
+        image: docker.io/mariadb:10
+        hostname: svr-mdb_guacamole
+        volumes:
+          - guac-mysql:/var/lib/mysql
+        ports:
+          - 3306:3306
+        network:
+          - guacamole_net
+        env:
+          MARIADB_ROOT_PASSWORD: S#55ic#jA
+          # MARIADB_RANDOM_ROOT_PASSWORD: no
+          MARIADB_DATABASE: guacamole
+          MARIADB_USER: guacamole
+          MARIADB_PASSWORD: S#55ic#jA
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: MariaDBOutputStart
+    - name: Print MariaDBOutputStart
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ MariaDBOutputStart }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtMariaDB
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=guacamole" --tags crtGuacd
+#
+#################################################
+- name: Create guacaamole daemon container task
+  block:
+    - name: Create guacamole daemon container section
+      containers.podman.podman_container:
+        name: c_guacd
+        image: docker.io/guacamole/guacd:1.5.0
+        hostname: svr-guacd
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: GuacdOutputStart
+    - name: Print GuacdOutputStart
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ GuacdOutputStart }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtGuacd
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=guacamole" --tags crtGuac
+#
+#################################################
+- name: Create guacamole GUI container task
+  block:
+    - name: Create guacamole GUI container section
+      containers.podman.podman_container:
+        name: c_guac
+        image: docker.io/guacamole/guacamole:1.5.0
+        hostname: svr-guac
+        ports:
+          - "8080:8080/tcp"
+        network:
+          - guacamole_net
+        env:
+          GUACD_HOSTNAME: c_guacd
+          MYSQL_HOSTNAME: c_mdb_guacamole
+          MYSQL_DATABASE: guacamole
+          MYSQL_USER: guacamole
+          MYSQL_PASSWORD: S#55ic#jA
+          MYSQL_PORT: 3306
+          TOTP_ENABLED: false
+          
+        debug: false
+        requires: 
+          - c_mdb_guacamole
+          - c_guacd
+        restart_policy: on-failure:3
+        state: started
+      register: GuacGuiOutputStart
+    - name: Print GuacGuiOutputStart
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ GuacGuiOutputStart }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtGuac
+
+
+
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=guacamole" --tags opnPorts
+#
+#################################################
+- name: Open ports for semaphore task
+  block:
+    - name: Open ports for semaphore section
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+      loop:
+        - "8080/tcp"
+  # Tags
+  tags:
+    - opnPorts
+# #################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=guacamole" --tags chkFirewall
+#
+# #################################################
+- name: Check firewall task
+  block:
+    - name: Check firewall section
+      ansible.builtin.shell: firewall-cmd --list-all
+      register: FirewallCheck
+    - name: Print FirewallCheck
+      debug:
+        msg:
+          - "<<<<< Firewall settings >>>>>"
+          - "{{ FirewallCheck.stdout_lines }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - chkFirewall

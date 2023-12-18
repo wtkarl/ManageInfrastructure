@@ -1,0 +1,97 @@
+---
+# tasks file for mgmt_Wazuh
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+#
+# #################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=wazuh" --tags imprtGPG
+#
+# #################################################
+- name: Install GPG key task
+  block:
+    - name: Install GPG key section
+      ansible.builtin.shell: rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
+      register: GPGCheck
+    - name: Print GPGCheck
+      debug:
+        msg:
+          - "<<<<< Import GPG key >>>>>"
+          - "{{ GPGCheck }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - imprtGPG
+# #################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=wazuh" --tags cpyRepoFile
+#
+# #################################################
+- name: Copy agt_wazuh.repo file task
+  block:
+    - name: Copy agt_wazuh.repo file section
+      ansible.builtin.copy:
+        src: ./roles/mgmt_Wazuh/files/agt_wazuh.repo
+        dest: /etc/yum.repos.d/wazuh.repo
+        owner: root
+        group: root
+        mode: 0644
+      register: RepoFileCopy
+    - name: Print RepoFileCopy
+      debug:
+        msg:
+          - "<<<<< Repo file copy >>>>>"
+          - "{{ RepoFileCopy }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - cpyRepoFile
+# #################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=wazuh" --tags instWazuhAgent
+#
+# #################################################
+- name: Install wazuh agent task
+  block:
+    - name: Install wazuh agent section
+      ansible.builtin.package:
+        name: 
+          - wazuh-agent
+        state: present
+      environment:
+        WAZUH_MANAGER: "192.168.1.253"
+      register: InstallWazuhAgent
+    - name: Print InstallWazuhAgent
+      debug:
+        msg:
+          - "<<<<< Install wazuh agent >>>>>"
+          - "{{ InstallWazuhAgent }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - instWazuhAgent
+# #################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=wazuh" --tags strtWazuhAgent
+#
+# #################################################
+- name: Enable and start wazuh-agent task
+  block:
+    - name: Enable and start wazuh-agent section
+      ansible.builtin.shell: |
+        systemctl daemon-reload
+        systemctl enable wazuh-agent
+        systemctl start wazuh-agent
+      register: EnableStartWazuhAgent
+    - name: Print EnableStartWazuhAgent
+      debug:
+        msg:
+          - "<<<<< Enable and start wazuh agent >>>>>"
+          - "{{ EnableStartWazuhAgent }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - strtWazuhAgent
