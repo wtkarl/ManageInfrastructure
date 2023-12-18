@@ -1,0 +1,44 @@
+{
+ "collection_info": {
+  "namespace": "pureport",
+  "name": "fabric",
+  "version": "1.0.0",
+  "authors": [
+   "Matt Traynham <matt.traynham@pureport.com>"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "networking",
+   "multicloud",
+   "cloud",
+   "aws",
+   "azure",
+   "google",
+   "vpn",
+   "pureport",
+   "web",
+   "sdn",
+   "bgp",
+   "nat"
+  ],
+  "description": "Ansible collection for automation the Pureport Faric",
+  "license": [
+   "GPL-3.0-only",
+   "BSD-2-Clause"
+  ],
+  "license_file": null,
+  "dependencies": {},
+  "repository": "https://github.com/ansible-collections/pureport",
+  "documentation": "https://github.com/ansible-collections/pureport/blob/develop/fabric/README.md",
+  "homepage": "https://www.pureport.com/",
+  "issues": "https://github.com/ansible-collections/pureport/issues"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "b75650515dcaaaf508e05113da59dfeecfb2c3d7d84c8e55fb16eed283903dc9",
+  "format": 1
+ },
+ "format": 1
+}
