@@ -30,8 +30,8 @@
         image: docker.io/mongo:7.0.4
         hostname: c_svr-mongodb
         volume:
-          - /data/db
-          - /root/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+          - /root/container/c_mongodb/db:/data/db
+          - /root/container/c_mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
         ports:
           - 27017:27017
         network:
@@ -53,7 +53,7 @@
         image: lscr.io/linuxserver/unifi-network-application:latest
         hostname: c_svr-unifi
         volume:
-          - /config
+          - /root/container/c_unifi/config:/config
         ports:
           - "1900:1900/udp" # optional
           - "3478:3478/udp"
