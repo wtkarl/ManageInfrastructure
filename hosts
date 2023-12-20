@@ -12,7 +12,7 @@ all:
           ansible_host: 192.168.1.202
         svr-wazuh:
           ansible_host: 192.168.1.253
-      # vars: # moved to host_vars/esxi
+      # vars: # moved to host_vars/esxi/vars
       #     ansible_port: 22
       #     ansible_connection: ansible.builtin.ssh
       #     ansible_user: myadmin
@@ -25,19 +25,21 @@ all:
 
 
     wazuh:
-      hosts:
-        svr-symcon:
-          ansible_host: 192.168.1.204
-          ansible_port: 22
-          ansible_connection: ansible.builtin.ssh
-        svr-unifi:
-          ansible_host: 192.168.1.254
-          ansible_port: 22
-          ansible_connection: ansible.builtin.ssh
-        svr-toolz:
-          ansible_host: 192.168.1.210
-          ansible_port: 22
-          ansible_connection: ansible.builtin.ssh
+      children:
+        clients:
+          hosts:
+            svr-symcon:
+              ansible_host: 192.168.1.204
+              ansible_port: 22
+              ansible_connection: ansible.builtin.ssh
+            svr-unifi:
+              ansible_host: 192.168.1.254
+              ansible_port: 22
+              ansible_connection: ansible.builtin.ssh
+            svr-toolz:
+              ansible_host: 192.168.1.210
+              ansible_port: 22
+              ansible_connection: ansible.builtin.ssh
 
 
 

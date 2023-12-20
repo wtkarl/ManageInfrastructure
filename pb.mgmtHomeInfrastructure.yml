@@ -12,7 +12,7 @@
 #
 #
 - name: Manage Home Infrastructure
-  hosts: localhost
+  hosts: all
   strategy: free
   #
   # vars_files:
@@ -36,30 +36,22 @@
     ###############################################
     - role: mgmt_SymconContainer
       delegate_to: svr-symcon
-      # vars:
-      #   ansible_user: myadmin
-      #   ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
-      #   ansible_become: true
-      #   ansible_become_user: root
-      #   ansible_become_password: S#55ic#jA
+      delegate_facts: true
       when: v_role == "symcon"
     - role: mgmt_UnifiContainer
       delegate_to: svr-unifi
-      # vars:
-      #   ansible_user: myadmin
-      #   ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
-      #   ansible_become: true
-      #   ansible_become_user: root
-      #   ansible_become_password: S#55ic#jA
+      delegate_facts: true
       when: v_role == "unifi"
     - role: mgmt_SemaphoreContainer
       delegate_to: svr-toolz
+      delegate_facts: true
       when: v_role == "semaphore"
     ###############################################
     # physical or virtual deployment
     ###############################################
     - role: mgmt_Wazuh
       delegate_to: svr-toolz
+      delegate_facts: true
       # delegate_to: svr-unifi
       # delegate_to: svr-symcon
       vars:
