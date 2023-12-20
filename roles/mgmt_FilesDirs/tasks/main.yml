@@ -72,7 +72,6 @@
       args:
         chdir: /home/myadmin/ansible
       when: "'staged' in GitStatus.stdout"
-
       register: GitPushOutput
     # - name: Print GitStatus
     #   debug:
