@@ -74,7 +74,7 @@
       debug:
         msg:
           - "<<<<< GitPushOutput >>>>>"
-          - "{{ GitPushOutput }}.stdout"
+          - "{{ GitPushOutput.stdout }}"
         verbosity: 0
   # Tags
   tags:
