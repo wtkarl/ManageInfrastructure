@@ -68,7 +68,7 @@
         - "git commit -m 'automated commit'"
         - "git push -u ongithub master"
       when: "'staged' in GitStatus.stdout"
-    #   register: GitStatus
+      register: GitPushOutput
     # - name: Print GitStatus
     #   debug:
     #     msg:
