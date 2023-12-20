@@ -74,9 +74,9 @@
       debug:
         msg:
           - "<<<<< GitPushOutput >>>>>"
-          - "{{ GitPushOutput.stdout }}"
+          - "{{ GitPushOutput }}"
         verbosity: 0
-        
+
   # Tags
   tags:
     - pshGitHub
