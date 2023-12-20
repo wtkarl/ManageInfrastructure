@@ -58,7 +58,7 @@
         msg:
           - "<<<<< GitStatus >>>>>"
           - "{{ GitStatus.stdout }}"
-        verbosity: 0
+        verbosity: 2
     - name: Push to GitHub section
       ansible.builtin.command:
         cmd: "{{ item }}"
@@ -66,19 +66,16 @@
         - git add *
         - git commit -m "automated commit"
         - git push -u ongithub master
-
-      become: yes
-      become_user: myadmin
       args:
         chdir: /home/myadmin/ansible
       when: "'staged' in GitStatus.stdout"
       register: GitPushOutput
-    # - name: Print GitStatus
-    #   debug:
-    #     msg:
-    #       - "<<<<< GitStatus >>>>>"
-    #       - "{{ GitStatus.stdout }}"
-    #     verbosity: 0
+    - name: Print GitPushOutput
+      debug:
+        msg:
+          - "<<<<< GitPushOutput >>>>>"
+          - "{{ GitPushOutput }}"
+        verbosity: 0
   # Tags
   tags:
     - pshGitHub
