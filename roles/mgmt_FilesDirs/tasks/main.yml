@@ -48,7 +48,7 @@
 #################################################
 - name: Push to GitHub task
   block:
-    - name: Push to GitHub section
+    - name: Check git status section
       ansible.builtin.shell: git status
       args:
         chdir: /home/myadmin/ansible
@@ -59,6 +59,21 @@
           - "<<<<< GitStatus >>>>>"
           - "{{ GitStatus.stdout }}"
         verbosity: 0
+    - name: Push to GitHub section
+      ansible.builtin.shell: |
+        git add *
+        git commit -m "automated commit"
+        ansible]$ git push -u ongithub master
+      args:
+        chdir: /home/myadmin/ansible
+      when: "'staged' in GitStatus.stdout"
+    #   register: GitStatus
+    # - name: Print GitStatus
+    #   debug:
+    #     msg:
+    #       - "<<<<< GitStatus >>>>>"
+    #       - "{{ GitStatus.stdout }}"
+    #     verbosity: 0
   # Tags
   tags:
     - pshGitHub
