@@ -63,7 +63,7 @@
         cmd: "{{ item }}"
       loop:
         - git add *
-        - git commit -m "automated commit"
+        - git commit -m "automated commit {{ ansible_date_time.date ansible_date_time.time }}"
         - git push -u ongithub master
       args:
         chdir: /home/myadmin/ansible

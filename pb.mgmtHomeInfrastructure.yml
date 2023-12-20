@@ -18,7 +18,7 @@
   # vars_files:
   #   - './global_vars/defvars.yml'
   #
-  gather_facts: FALSE
+  gather_facts: true
   #  
   # vars:
   #   domain: home.lcl
