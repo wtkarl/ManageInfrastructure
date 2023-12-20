@@ -12,9 +12,29 @@
 #################################################
 - name: Copy remote to local task
   block:
+    - name: Get files in backup folder
+      ansible.builtin.find:
+        paths: "/root/container/c_unifi/config/data/backup/autobackup/"
+        patterns: '*.unf'
+      register: FilesFound
+    - name: Print FilesFound
+      debug:
+        msg:
+          - "<<<<< FilesFound >>>>>"
+          - "{{ FilesFound }}"
+        verbosity: 2
+    - name: Get newest file
+      ansible.builtin.set_fact:
+        NewestFile: "{{ (FilesFound.files | sort(attribute='mtime') | last).path }}"    
+    - name: Print NewestFile
+      debug:
+        msg:
+          - "<<<<< NewestFile >>>>>"
+          - "{{ NewestFile }}"
+        verbosity: 2
     - name: Copy remote to local section
       ansible.builtin.fetch:
-        src: /root/container/c_unifi/config/data/backup/autobackup/autobackup_8.0.7_20231220_0030_1703032200007.unf
+        src: "{{ NewestFile }}"
         dest: /home/myadmin/ansible/FILES.BUP/
         flat: true
         owner: myadmin
