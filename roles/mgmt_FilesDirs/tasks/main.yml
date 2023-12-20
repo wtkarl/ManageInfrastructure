@@ -60,12 +60,13 @@
           - "{{ GitStatus.stdout }}"
         verbosity: 0
     - name: Push to GitHub section
-      ansible.builtin.shell: |
-        git add *
-        git commit -m "automated commit"
-        ansible]$ git push -u ongithub master
+      ansible.builtin.command: "{{ item }}"
       args:
         chdir: /home/myadmin/ansible
+      loop:
+        - "git add *"
+        - "git commit -m 'automated commit'"
+        - "git push -u ongithub master"
       when: "'staged' in GitStatus.stdout"
     #   register: GitStatus
     # - name: Print GitStatus
