@@ -57,7 +57,7 @@
       debug:
         msg:
           - "<<<<< GitStatus >>>>>"
-          - "{{ GitStatus }}"
+          - "{{ GitStatus.stdout }}"
         verbosity: 0
   # Tags
   tags:
