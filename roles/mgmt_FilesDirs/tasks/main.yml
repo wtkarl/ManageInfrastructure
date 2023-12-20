@@ -58,7 +58,7 @@
         msg:
           - "<<<<< GitStatus >>>>>"
           - "{{ GitStatus.stdout }}"
-        verbosity: 0
+        verbosity: 2
     - name: Push to GitHub section
       ansible.builtin.command:
         cmd: "{{ item }}"
@@ -74,7 +74,7 @@
       debug:
         msg:
           - "<<<<< GitPushOutput >>>>>"
-          - "{{ GitPushOutput }}"
+          - "{{ GitPushOutput }}.stdout"
         verbosity: 0
   # Tags
   tags:
