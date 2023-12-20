@@ -61,6 +61,11 @@
         ansible_become_user: root
         ansible_become_password: S#55ic#jA
       when: v_role == "wazuh"
+    - role: mgmt_FilesDirs
+      when: v_role == "files"
+#
+#
+#      
     #################################################
     # This solution is bullshit
     #################################################

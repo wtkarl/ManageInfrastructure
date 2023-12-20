@@ -1,2 +1,24 @@
 ---
 # tasks file for mgmt_FilesDirs
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+# TODO: task to copy init-mongo.js to svr-unifi
+#
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=files" --tags cpRmt2Lcl
+#################################################
+- name: Copy remote to local task
+  block:
+    - name: Copy remote to local section
+      ansible.builtin.fetch:
+        src: /root/container/c_unifi/config/data/backup/autobackup/autobackup_8.0.7_20231220_0030_1703032200007.unf
+        dest: /home/myadmin/ansible/FILES.BUP/
+        flat: true
+        owner: myadmin
+        group: myadmin
+        mode: '0600' 
+  tags:
+    - cpRmt2Lcl
