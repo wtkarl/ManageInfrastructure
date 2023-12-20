@@ -67,6 +67,7 @@
         - "git add *"
         - "git commit -m 'automated commit'"
         - "git push -u ongithub master"
+      become: false
       when: "'staged' in GitStatus.stdout"
 
       register: GitPushOutput
