@@ -44,7 +44,7 @@
     - cpRmt2Lcl
 
 #################################################
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-toolz --extra-vars "v_role=files" --tags pshGitHub
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-toolz --extra-vars "v_role=files ansible_become=false" --tags pshGitHub
 #################################################
 - name: Push to GitHub task
   block:
@@ -74,7 +74,7 @@
       debug:
         msg:
           - "<<<<< GitPushOutput >>>>>"
-          - "{{ GitPushOutput.stdout }}"
+          - "{{ GitPushOutput }}"
         verbosity: 0
   # Tags
   tags:
