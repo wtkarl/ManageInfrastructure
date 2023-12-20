@@ -39,8 +39,8 @@
       # delegate_facts: true
       when: v_role == "symcon"
     - role: mgmt_UnifiContainer
-      delegate_to: svr-unifi
-      delegate_facts: true
+      # delegate_to: svr-unifi
+      # delegate_facts: true
       when: v_role == "unifi"
     - role: mgmt_SemaphoreContainer
       # delegate_to: svr-toolz
