@@ -61,13 +61,14 @@
         verbosity: 0
     - name: Push to GitHub section
       ansible.builtin.command: "{{ item }}"
+      become: yes
+      become_user: myadmin
       args:
         chdir: /home/myadmin/ansible
       loop:
         - "git add *"
         - "git commit -m 'automated commit'"
         - "git push -u ongithub master"
-      become: false
       when: "'staged' in GitStatus.stdout"
 
       register: GitPushOutput
