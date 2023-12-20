@@ -12,7 +12,7 @@
 #
 #
 - name: Manage Home Infrastructure
-  hosts: localhost
+  hosts: all
   strategy: free
   #
   # vars_files:
