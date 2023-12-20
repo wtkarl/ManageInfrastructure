@@ -7,8 +7,9 @@
 #
 # TODO: task to copy init-mongo.js to svr-unifi
 #
-################################################
-#
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags crtMongoDB
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags crtUnifi
 #################################################
 - name: Create container network task
   block:
@@ -20,7 +21,7 @@
     - crtMongoDB
     - crtUnifi
 #################################################
-#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags crtMongoDB
 #################################################
 - name: Create unifi mongodb container task
   block:
@@ -45,6 +46,9 @@
   # Tags
   tags:
     - crtMongoDB
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags crtUnifi
+#################################################
 - name: Create unifi container task
   block:
     - name: Create unifi container section
@@ -85,8 +89,49 @@
   # Tags
   tags:
     - crtUnifi
+
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags strtUnifi
+#################################################
+- name: Start unifi container task
+  block:
+    - name: Start unifi container section
+      containers.podman.podman_container:
+        name: c_unifi
+        debug: false
+        state: started
+      register: UnifiOutput
+    - name: Print UnifiOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ UnifiOutput }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - strtUnifi
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags stpUnifi
+#################################################
+- name: Stop unifi container task
+  block:
+    - name: Stop unifi container section
+      containers.podman.podman_container:
+        name: c_unifi
+        debug: false
+        state: stopped
+      register: UnifiOutput
+    - name: Print UnifiOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ UnifiOutput }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - stpUnifi
 ################################################
-#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags opnPorts
 #################################################
 - name: Open ports for unifi task
   block:
@@ -109,7 +154,7 @@
   tags:
     - opnPorts
 #################################################
-#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags chkFirewall
 #################################################
 - name: Check firewall task
   block:
