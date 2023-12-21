@@ -37,9 +37,6 @@
           - 27017:27017
         network:
           - unifi_net
-        # env:
-        #   MONGO_INITDB_ROOT_USERNAME: root
-        #   MONGO_INITDB_ROOT_PASSWORD: Sa55icajA
         debug: false
         restart_policy: on-failure:3
         state: started
@@ -89,6 +86,52 @@
   # Tags
   tags:
     - crtUnifi
+
+
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags delUnifiCntr
+#################################################
+- name: Delete unifi container task
+  block:
+    - name: Delete unifi container section
+      containers.podman.podman_container:
+        name: c_unifi
+        debug: false
+        state: absent
+      register: UnifiCntrDelOutput
+    - name: Print UnifiCntrDelOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ UnifiCntrDelOutput }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - delUnifiCntr
+
+
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags delUnifiImg
+#################################################
+- name: Start unifi container task
+  block:
+    - name: Start unifi container section
+      containers.podman.podman_image:
+        name: docker.io/mongo:7.0.4
+        debug: false
+        state: absent
+      register: UnifiImgDelOutput
+    - name: Print UnifiImgDelOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ UnifiImgDelOutput }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - delUnifiImg
+
+
 
 #################################################
 # ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags strtUnifi
@@ -153,6 +196,7 @@
   # Tags
   tags:
     - opnPorts
+    - crtUnifi
 #################################################
 # ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=unifi" --tags chkFirewall
 #################################################

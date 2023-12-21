@@ -12,7 +12,7 @@
 #
 #
 - name: Manage Home Infrastructure
-  hosts: all
+  hosts: all # target server are selected by '-l svr-*' on CLI
   strategy: free
   #
   # vars_files:
@@ -33,18 +33,14 @@
   roles:
     ###############################################
     # podman container management
+    # all tasks run with 'ansible_become: true'
+    # if a task needs to run as myadmin 'ansible_become=false' on CLI with '--extra_var'
     ###############################################
     - role: mgmt_SymconContainer
-      # delegate_to: svr-symcon
-      # delegate_facts: true
       when: v_role == "symcon"
     - role: mgmt_UnifiContainer
-      # delegate_to: svr-unifi
-      # delegate_facts: true
       when: v_role == "unifi"
     - role: mgmt_SemaphoreContainer
-      # delegate_to: svr-toolz
-      # delegate_facts: true
       when: v_role == "semaphore"
     ###############################################
     # physical or virtual deployment
