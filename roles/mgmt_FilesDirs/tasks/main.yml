@@ -35,7 +35,7 @@
     - name: Copy remote to local section
       ansible.builtin.fetch:
         src: "{{ NewestFile }}"
-        dest: /home/myadmin/ansible/FILES.BUP/
+        dest: /home/myadmin/
         flat: true
         owner: myadmin
         group: myadmin
