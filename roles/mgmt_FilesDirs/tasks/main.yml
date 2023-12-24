@@ -37,9 +37,9 @@
         src: "{{ NewestFile }}"
         dest: /home/myadmin/ansible/FILES.BUP/
         flat: true
-        # owner: myadmin
-        # group: myadmin
-        # mode: '0600' 
+        owner: myadmin
+        group: myadmin
+        mode: '0600' 
   tags:
     - cpRmt2Lcl
 #################################################
