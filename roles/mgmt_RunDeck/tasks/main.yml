@@ -1,0 +1,109 @@
+---
+# tasks file for mgmt_RunDeck
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+#
+################################################
+#
+#################################################
+- name: Create container network task
+  block:
+    - name: Create container network section
+      containers.podman.podman_network:
+        name: rundeck_net
+      become: true
+  tags:
+    - crtMariaDB
+    - crtRunDeck
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=rundeck" --tags delImage
+#
+#################################################
+# - name: Delete image file task
+#   block:
+#     - name: Delete image file section 
+#       containers.podman.podman_network:
+#         name: docker.io/mariadb
+#         state: absent
+#   # Tags
+#   tags:
+#     - delImage
+#     - updMariaDB
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=rundeck" --tags crtMariaDB
+#
+#################################################
+- name: Create runDeck MariaDB container task
+  block:
+    - name: Create rundeck MariaDB container section
+      containers.podman.podman_container:
+        name: c_mdb_rundeck
+        image: docker.io/mariadb:10
+        hostname: svr-mdb_rundeck
+        volumes:
+          - /root/container/c_rundeck/rundeck-mysql:/var/lib/mysql
+        ports:
+          - 3306:3306
+        network:
+          - rundeck_net
+        env:
+          MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+          MARIADB_DATABASE: rundeck
+          MARIADB_USER: rundeck
+          MARIADB_PASSWORD: S#55ic#jA
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: MariaDBOutputStart
+    - name: Print MariaDBOutputStart
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ MariaDBOutputStart }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtMariaDB
+    - updMariaDB
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags crtMariaDB
+#
+#################################################
+- name: Create runDeck  container task
+  block:
+    - name: Create rundeck  container section
+      containers.podman.podman_container:
+        name: c_rundeck
+        image: docker.io/rundeck/rundeck:5.0.0
+        hostname: svr-rundeck
+        volumes:
+          # - licensekey:/home/rundeck/etc/rundeckpro-license.key
+          - data:/home/rundeck/server/data
+          - plugins:/home/rundeck/repository/installedPlugins
+          - projects:/home/rundeck/projects
+        ports:
+          - 4440:4440
+        network:
+          - rundeck_net
+        env:
+            RUNDECK_DATABASE_DRIVER: org.mariadb.jdbc.Driver
+            RUNDECK_DATABASE_USERNAME: rundeck
+            RUNDECK_DATABASE_PASSWORD: S#55ic#jA
+            RUNDECK_DATABASE_URL: jdbc:mysql://c_mdb_rundeck/rundeck?autoReconnect=true&useSSL=false
+            RUNDECK_GRAILS_URL: http://192.168.1.210:4440
+        debug: true
+        requires: 
+          - c_mdb_rundeck
+        restart_policy: on-failure:3
+        state: started
+
+# Tags
+  tags:
+    - crtRunDeck
+

@@ -42,6 +42,8 @@
       when: v_role == "unifi"
     - role: mgmt_SemaphoreContainer
       when: v_role == "semaphore"
+    - role: mgmt_RunDeck
+      when: v_role == "rundeck"
     ###############################################
     # physical or virtual deployment
     ###############################################
