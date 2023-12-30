@@ -46,7 +46,7 @@
         image: docker.io/mariadb:10
         hostname: svr-mdb_rundeck
         volumes:
-          - /root/container/c_rundeck/rundeck-mysql:/var/lib/mysql
+          - rundeck-mysql:/var/lib/mysql
         ports:
           - 3306:3306
         network:
@@ -72,8 +72,14 @@
     - updMariaDB
 #################################################
 #
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=semaphore" --tags crtMariaDB
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=rundeck" --tags crtRunDeck
 #
+#################################################
+# To install ansible follow this instructions:
+# https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-debian
+#################################################
+# How to use podman commit
+# https://www.techrepublic.com/article/create-custom-images-podman/
 #################################################
 - name: Create runDeck  container task
   block:
@@ -83,10 +89,9 @@
         image: docker.io/rundeck/rundeck:5.0.0
         hostname: svr-rundeck
         volumes:
-          # - licensekey:/home/rundeck/etc/rundeckpro-license.key
-          - data:/home/rundeck/server/data
-          - plugins:/home/rundeck/repository/installedPlugins
-          - projects:/home/rundeck/projects
+          - rundeck-data:/home/rundeck/server/data
+          - rundeck-plugins:/home/rundeck/repository/installedPlugins
+          - /home/myadmin/ansible:/home/rundeck/projects
         ports:
           - 4440:4440
         network:
