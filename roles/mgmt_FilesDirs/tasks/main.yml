@@ -8,7 +8,7 @@
 # TODO: task to copy init-mongo.js to svr-unifi
 #
 #################################################
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-unifi --extra-vars "v_role=files" --tags cpRmt2Lcl
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-unifi --extra-vars "v_role=files" --tags cpRmt2Lcl
 #################################################
 - name: Copy remote to local task
   block:
@@ -35,29 +35,37 @@
     - name: Copy remote to local section
       ansible.builtin.fetch:
         src: "{{ NewestFile }}"
-        dest: /home/myadmin/ansible/FILES.BUP/
+        dest: ./FILES.BUP/
         flat: true
         owner: myadmin
         group: myadmin
         mode: '0600' 
+      register: FilesCopy
+    - name: Print FilesCopy
+      debug:
+        msg:
+          - "<<<<< FilesCopy >>>>>"
+          - "{{ FilesCopy }}"
+        verbosity: 2
   tags:
     - cpRmt2Lcl
 #################################################
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml -l svr-toolz --extra-vars "v_role=files ansible_become=false" --tags pshGitHub
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=files ansible_become=false" --tags pshGitHub
+# TODO: problem with relative path
 #################################################
 - name: Push to GitHub task
   block:
     - name: Check git status section
       ansible.builtin.shell: git status
       args:
-        chdir: /home/myadmin/ansible
+        chdir: ./
       register: GitStatus
     - name: Print GitStatus
       debug:
         msg:
           - "<<<<< GitStatus >>>>>"
           - "{{ GitStatus.stdout }}"
-        verbosity: 2
+        verbosity: 0
     - name: Push to GitHub section
       ansible.builtin.command:
         cmd: "{{ item }}"
@@ -66,7 +74,7 @@
         - git commit -m "automated commit"
         - git push -u ongithub master
       args:
-        chdir: /home/myadmin/ansible
+        chdir: ./
       when: "'staged' in GitStatus.stdout"
       register: GitPushOutput
     - name: Print GitPushOutput

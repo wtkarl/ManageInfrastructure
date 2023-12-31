@@ -77,6 +77,9 @@
 #################################################
 # To install ansible follow this instructions:
 # https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-debian
+# prerequisites DONE - ansible still needs to be installed manually
+#################################################
+# git and pssh has to be installed as well - DONE
 #################################################
 # How to use podman commit
 # https://www.techrepublic.com/article/create-custom-images-podman/
@@ -107,6 +110,20 @@
           - c_mdb_rundeck
         restart_policy: on-failure:3
         state: started
+    - name: Install Git, pssh section
+      ansible.builtin.command:
+        cmd: "{{ item }}"
+      loop:
+        - podman exec --user root c_rundeck apt update -y
+        - podman exec --user root c_rundeck apt install git -y
+        - podman exec --user root c_rundeck apt install pssh -y
+        - podman exec --user root c_rundeck wget -O file.key  "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367"
+        - podman exec --user root c_rundeck gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg file.key
+        - podman exec --user root c_rundeck echo "deb [signed-by=/usr/share/keyrings/ansible-archive-keyring.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu jammy main" | tee /etc/apt/sources.list.d/ansible.list
+        - podman exec --user root c_rundeck rm -f file.key
+      # args:
+      #   chdir: ./
+      
 
 # Tags
   tags:
