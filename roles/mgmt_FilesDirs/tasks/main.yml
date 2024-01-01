@@ -57,10 +57,17 @@
   block:
     - name: Check git status section
       ansible.builtin.shell: git status
+      # run from CLI
       args:
         chdir: "{{ ansible_user_dir }}/ansible/"
       when:
         - ansible_user_id == "myadmin"
+      # run from RunDeck
+      args:
+        chdir: "{{ ansible_user_dir }}/project/"
+      when:
+        - ansible_user_id == "rundeck"
+      #
       register: GitStatus
     - name: Print GitStatus
       debug:
@@ -75,11 +82,19 @@
         - git add *
         - git commit -m "automated commit"
         - git push -u ongithub master
+      # run from CLI
       args:
         chdir: "{{ ansible_user_dir }}/ansible/"
       when:
         - '"staged" in GitStatus.stdout'
         - ansible_user_id == "myadmin"
+      # run from RunDeck
+      args:
+        chdir: "{{ ansible_user_dir }}/project/"
+      when:
+        - '"staged" in GitStatus.stdout'
+        - ansible_user_id == "rundeck"
+      #
       register: GitPushOutput
     - name: Print GitPushOutput
       debug:
