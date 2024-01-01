@@ -123,8 +123,6 @@
         - podman exec --user root c_rundeck rm -f file.key
       # args:
       #   chdir: ./
-      
-
 # Tags
   tags:
     - crtRunDeck
