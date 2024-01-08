@@ -1,0 +1,38 @@
+---
+# tasks file for mgmt_UptimeKuma
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+# 
+#
+#################################################
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-unifi --extra-vars "v_role=kuma" --tags crtUptimeKuma
+#################################################
+- name: Create uptime kuma task
+  block:
+    - name: Create uptime kuma section
+      containers.podman.podman_container:
+        name: c_uptimekuma
+        image: docker.io/louislam/uptime-kuma
+        hostname: svr-uptimekuma
+        volumes:
+          - uptime-kuma_data:/app/data
+        ports:
+          - 3001:3001
+        env:
+          kuma_image_os: alpine
+          kuma_tag: latest
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: UptimeKumaOutput
+    - name: Print UptimeKumaOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ UptimeKumaOutput }}"
+        verbosity: 0
+  tags:
+    - crtUptimeKuma

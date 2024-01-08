@@ -1,0 +1,17 @@
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+  evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+  # scrape_timeout is set to the global default (10s).
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets:
+        - "192.168.1.210:9095"
+  - job_name: "node"
+    static_configs:
+      - targets:
+        - "192.168.1.210:9100"

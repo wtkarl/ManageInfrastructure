@@ -1,0 +1,121 @@
+---
+# tasks file for mgmt_PrometheusGrafana
+#
+# Author: Walter Karl
+# Date: December.2023
+# Company:
+#
+#
+################################################
+#
+#################################################
+- name: Create container network task
+  block:
+    - name: Create container network section
+      containers.podman.podman_network:
+        name: promgraf_net
+      become: true
+  tags:
+    - crtPrometheus
+    - crtPromNodeExp
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPrometheus
+#
+#################################################
+- name: Create Prometheus container task
+  block:
+    - name: Create Prometheus container section
+      containers.podman.podman_container:
+        name: c_prometheus
+        image: docker.io/prom/prometheus
+        hostname: svr-prometheus
+        volumes:
+          - /home/myadmin/ansible/roles/mgmt_PrometheusGrafana/files/prometheus.yml:/etc/prometheus/prometheus.yml
+        ports:
+          - 9095:9090
+        network:
+          - promgraf_net
+        # env:
+        #   MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: PrometheusOutput
+    - name: Print PrometheusOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ PrometheusOutput }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtPrometheus
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPrometheus
+#
+#################################################
+- name: Create Grafana container task
+  block:
+    - name: Create Grafana container section
+      containers.podman.podman_container:
+        name: c_grafana
+        image: docker.io/grafana/grafana
+        hostname: svr-grafana
+        volumes:
+          - grafana_data:/etc/grafana/provisioning/datasources
+        ports:
+          - 3000:3000
+        network:
+          - promgraf_net
+        env:
+          GF_SECURITY_ADMIN_USER: admin
+          GF_SECURITY_ADMIN_PASSWORD: admin
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: GrafanaOutput
+    - name: Print GrafanaOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ GrafanaOutput }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtGrafana
+
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPromNodeExp
+#
+#################################################
+- name: Create node exporter container task
+  block:
+    - name: Create node exporter container section
+      containers.podman.podman_container:
+        name: c_promnodeexp
+        image: docker.io/prom/node-exporter
+        hostname: svr-promne
+        # volumes:
+        #   - ./roles/mgmt_PrometheusGrafana/files/prometheus.yml:/etc/prometheus/prometheus.yml
+        ports:
+          - 9100:9100
+        network:
+          - promgraf_net
+        # env:
+        #   MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: PromNodeExpOutput
+    - name: Print PromNodeExpOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ PromNodeExpOutput }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtPromNodeExp

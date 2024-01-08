@@ -38,12 +38,16 @@
     ###############################################
     - role: mgmt_SymconContainer
       when: v_role == "symcon"
-    - role: mgmt_UnifiContainer
+    - role: mgmt_UnifiContainer # depreciated
       when: v_role == "unifi"
     - role: mgmt_SemaphoreContainer
       when: v_role == "semaphore"
     - role: mgmt_RunDeck
       when: v_role == "rundeck"
+    - role: mgmt_UptimeKuma
+      when: v_role == "kuma"
+    - role: mgmt_PrometheusGrafana
+      when: v_role == "promgraf"
     ###############################################
     # physical or virtual deployment
     ###############################################
