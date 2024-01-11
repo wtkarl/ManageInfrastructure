@@ -44,10 +44,12 @@
       when: v_role == "semaphore"
     - role: mgmt_RunDeck
       when: v_role == "rundeck"
-    - role: mgmt_UptimeKuma
-      when: v_role == "kuma"
+    # - role: mgmt_UptimeKuma
+    #   when: v_role == "kuma"
     - role: mgmt_PrometheusGrafana
       when: v_role == "promgraf"
+    - role: mgmt_Infrastructure
+      when: v_role == "infra"
     ###############################################
     # physical or virtual deployment
     ###############################################
@@ -63,8 +65,8 @@
         ansible_become_user: root
         ansible_become_password: S#55ic#jA
       when: v_role == "wazuh"
-    - role: mgmt_FilesDirs
-      when: v_role == "files"
+    # - role: mgmt_FilesDirs
+    #   when: v_role == "files"
 #
 #
 #      

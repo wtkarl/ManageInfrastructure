@@ -18,6 +18,7 @@
   tags:
     - crtPrometheus
     - crtPromNodeExp
+    - crtDNS
 #################################################
 #
 # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPrometheus
@@ -30,10 +31,16 @@
         name: c_prometheus
         image: docker.io/prom/prometheus
         hostname: svr-prometheus
+        command:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+          - '--web.console.templates=/usr/share/prometheus/consoles'
         volumes:
           - /home/myadmin/ansible/roles/mgmt_PrometheusGrafana/files/prometheus.yml:/etc/prometheus/prometheus.yml
+          - prometheus_data:/prometheus
         ports:
-          - 9095:9090
+          - 9095:9090 # cockpit uses 9090 already
         network:
           - promgraf_net
         # env:
@@ -64,7 +71,8 @@
         image: docker.io/grafana/grafana
         hostname: svr-grafana
         volumes:
-          - grafana_data:/etc/grafana/provisioning/datasources
+          - gf_data:/var/lib/grafana
+          - gf_provisioning:/etc/grafana/provisioning
         ports:
           - 3000:3000
         network:
@@ -72,6 +80,7 @@
         env:
           GF_SECURITY_ADMIN_USER: admin
           GF_SECURITY_ADMIN_PASSWORD: admin
+          GF_INSTALL_PLUGINS: 'grafana-clock-panel,grafana-simple-json-datasource'
         debug: false
         restart_policy: on-failure:3
         state: started
@@ -85,7 +94,6 @@
 # Tags
   tags:
     - crtGrafana
-
 #################################################
 #
 # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPromNodeExp
@@ -98,8 +106,10 @@
         name: c_promnodeexp
         image: docker.io/prom/node-exporter
         hostname: svr-promne
-        # volumes:
-        #   - ./roles/mgmt_PrometheusGrafana/files/prometheus.yml:/etc/prometheus/prometheus.yml
+        volumes:
+          - /proc:/host/proc:ro
+          - /sys:/host/sys:ro
+          - /:/rootfs:ro
         ports:
           - 9100:9100
         network:
@@ -119,3 +129,41 @@
 # Tags
   tags:
     - crtPromNodeExp
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPromNodeExp
+#
+#################################################
+- name: Create blackbox exporter container task
+  block:
+    - name: Create blackbox exporter container section
+      containers.podman.podman_container:
+        name: c_promblackboxexp
+        image: docker.io/prom/blackbox-exporter
+        hostname: svr-prombb
+        etc_hosts:
+          ubqt-udm.home.lcl: 192.168.1.1
+          svr-symcon.home.lcl: 192.168.1.204
+          svr-rbm.hom.lcl: 192.168.1.202
+          svr-toolz.home.lcl: 192.168.1.210
+          svr-esxi.home.lcl: 192.168.1.200
+        command:
+          - '--config.file=/blackbox.yml'
+        volumes:
+          - /home/myadmin/ansible/roles/mgmt_PrometheusGrafana/files/blackbox.yml:/blackbox.yml:ro
+        ports:
+          - 9115:9115
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: PromBlackBoxOutput
+    - name: Print PromBlackBoxOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ PromBlackBoxOutput }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtPromBlackBoxExp
+
