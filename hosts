@@ -10,6 +10,8 @@ all:
           ansible_host: 192.168.1.210
         svr-rbm:
           ansible_host: 192.168.1.202
+        svr-test:
+          ansible_host: 192.168.1.72
         svr-wazuh:
           ansible_host: 192.168.1.253
       vars: # moved to host_vars/esxi/vars
