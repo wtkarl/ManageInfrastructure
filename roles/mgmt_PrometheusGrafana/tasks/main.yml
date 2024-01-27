@@ -21,7 +21,7 @@
     - crtDNS
 #################################################
 #
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPrometheus
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPrometheus
 #
 #################################################
 - name: Create Prometheus container task
@@ -60,7 +60,7 @@
     - crtPrometheus
 #################################################
 #
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPrometheus
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtGrafana
 #
 #################################################
 - name: Create Grafana container task
@@ -96,7 +96,7 @@
     - crtGrafana
 #################################################
 #
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPromNodeExp
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPromNodeExp
 #
 #################################################
 - name: Create node exporter container task
@@ -114,8 +114,6 @@
           - 9100:9100
         network:
           - promgraf_net
-        # env:
-        #   MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
         debug: false
         restart_policy: on-failure:3
         state: started
@@ -131,7 +129,7 @@
     - crtPromNodeExp
 #################################################
 #
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPromNodeExp
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPromBlackBoxExp
 #
 #################################################
 - name: Create blackbox exporter container task
@@ -141,12 +139,6 @@
         name: c_promblackboxexp
         image: docker.io/prom/blackbox-exporter
         hostname: svr-prombb
-        etc_hosts:
-          ubqt-udm.home.lcl: 192.168.1.1
-          svr-symcon.home.lcl: 192.168.1.204
-          svr-rbm.hom.lcl: 192.168.1.202
-          svr-toolz.home.lcl: 192.168.1.210
-          svr-esxi.home.lcl: 192.168.1.200
         command:
           - '--config.file=/blackbox.yml'
         volumes:

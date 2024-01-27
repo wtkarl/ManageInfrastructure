@@ -2,63 +2,72 @@
 # Date: December.2023
 # Company:
 #
+#################################################
+#
+# git source > https://github.com/prometheus/blackbox_exporter/tree/master?tab=readme-ov-file
+# example config file > https://prometheus.io/docs/prometheus/latest/configuration/configuration/#configuration-file
+# information source > https://www.squadcast.com/blog/prometheus-blackbox-exporter
+# information source regarding ICMP > https://www.puppeteers.net/blog/blackbox-exporter-icmp-module-and-selinux/
+#
+#################################################
 global:
   scrape_interval:     15s # By default, scrape targets every 15 seconds.
   evaluation_interval: 15s # By default, scrape targets every 15 seconds.
   # scrape_timeout is set to the global default (10s).
+
 scrape_configs:
-  - job_name: "prometheus"
+
+  - job_name: "prometheus on svr-toolz.hom.lcl"
     metrics_path: /metrics
+    params:
+      module: [http_2xx]
     static_configs:
       - targets:
         - "192.168.1.210:9095"
-modules:
-  http_2xx:
-    prober: http
-    timeout: 5s
-    https:
-      valid_status_codes: [200, 201, 202, 203, 204, 205, 206, 207, 208, 226, 401, 405] #default to 2xx
-      method: GET
-#
+
   - job_name: "svr-toolz"
     metrics_path: /metrics
+    params:
+      module: [http_2xx]
     static_configs:
       - targets:
         - "192.168.1.210:9100"
 
-
-  - job_name: "svr-toolz.blackbox.itself"
+  - job_name: "black box exporter metrix"
     metrics_path: /metrics
+    params:
+      module: [http_2xx]
     static_configs:
       - targets:
         - "192.168.1.210:9115"
 
-
-  - job_name: svr-toolz.blackbox.http # To get metrics about the exporter’s targets
+  - job_name: "black box exporter on svr-toolz.home.lcl" # To get metrics about the exporter’s targets
     metrics_path: /probe
     params:
-      module: [http_2xx]
+      module: 
+        - http_2xx
+        - icmp
     static_configs:
-      - targets: https://ubqt-udm.home.lcl
-        labels:
-          name: Ubiqiti Dream Machine
-        # - https://svr-esxi.home.lcl
-        # - http://svr-toolz.home.lcl:9115
-        # - http://svr-symcon.home.lcl:3777
-        # - https://svr-rbm.home.lcl
+      - targets:
+        - https://192.168.1.1 # dream machine
+        - https://192.168.1.200 # esxi
+        - http://192.168.1.210:9115 # toolz
+        - http://192.168.1.204:3777 # symcon
+        - https://192.168.1.202 # raspberrymatic
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: svr-toolz.home.lcl:9115  # The blackbox exporter’s real hostname:port.
+        replacement: 192.168.1.210:9115  # The blackbox exporter’s real hostname:port.
 
   - job_name: "svr-symcon"
     metrics_path: /metrics
     static_configs:
       - targets:
         - "192.168.1.204:9100"
+
   - job_name: "svr-symcon.podman"
     metrics_path: /metrics
     static_configs:
