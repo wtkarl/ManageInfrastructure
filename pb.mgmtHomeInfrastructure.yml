@@ -9,6 +9,7 @@
 # ansible-galaxy collection install community.general
 # ansible-galaxy collection install ansible.posix
 # ansible-galaxy collection install community.mongodb
+# ansible-galaxy collection install prometheus.prometheus
 #
 #
 - name: Manage Home Infrastructure
@@ -50,6 +51,23 @@
       when: v_role == "promgraf"
     - role: mgmt_Infrastructure
       when: v_role == "infra"
+    ###############################################
+    # Prometheus collection contain already roles
+    # more information > https://prometheus-community.github.io/ansible/branch/main/index.html
+    ###############################################
+    - role: prometheus.prometheus.node_exporter
+      vars:
+        node_exporter_web_telemetry_path: "/metrics"
+        node_exporter_web_listen_address: "0.0.0.0:9100"
+        # node_exporter_version: "1.7.0"
+        node_exporter_textfile_dir: "/var/lib/node_exporter"
+        node_exporter_system_user: "node-exp"
+        node_exporter_system_group: "node-exp"
+        # node_exporter_enabled_collectors: ["systemd", {"textfile": {"directory": "{{ node_exporter_textfile_dir }}"}}]
+        # node_exporter_binary_url: "https://github.com/{{ _node_exporter_repo }}/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+        # node_exporter_checksums_url: "https://github.com/{{ _node_exporter_repo }}/releases/download/v{{ node_exporter_version }}/sha256sums.txt"
+        node_exporter_binary_install_dir: "/usr/local/bin"      
+      when: v_role == "promne"
     ###############################################
     # physical or virtual deployment
     ###############################################

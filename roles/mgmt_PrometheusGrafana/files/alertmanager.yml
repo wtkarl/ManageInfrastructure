@@ -1,0 +1,15 @@
+route:
+  receiver: 'mail'
+  group_wait: 35s
+  group_interval: 5m
+  repeat_interval: 4h
+  group_by: [ '...' ]
+
+receivers:
+  - name: 'mail'
+    email_configs:
+      - smarthost: 'smtp.mailbox.org:465'
+        auth_username: 'walter.karl@mailbox.org'
+        auth_password: "v@95j@92DO61"
+        from: 'am@ghome.lcl'
+        to: 'walter.karl@mailbox.org'

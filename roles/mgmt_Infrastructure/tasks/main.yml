@@ -2,13 +2,34 @@
 # tasks file for mgmt_Infrastructure
 #
 # Author: Walter Karl
-# Date: December.2023
+# Date: Februar.2024
 # Company:
 #
 #
 #################################################
 #
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPromNodeExp
+#################################################
+- name: Open ports for technitium task
+  block:
+    - name: Open ports for technitium section
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        zone: public
+        state: enabled
+        immediate: true
+        permanent: true
+      loop:
+        - 53/tcp
+        - 53/udp
+        - 5300/tcp
+  # Tags
+  tags:
+    # - crtDNS
+    - opnPorts
+
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=infra" --tags crtDNS
 #
 #################################################
 - name: Create technitium DNS server container task
@@ -37,7 +58,7 @@
           # DNS_SERVER_ADMIN_PASSWORD: ******** #DNS web console admin user password.
           # DNS_SERVER_ADMIN_PASSWORD_FILE: password.txt #The path to a file that contains a plain text password for the DNS web console admin user.
           # DNS_SERVER_PREFER_IPV6: false #DNS Server will use IPv6 for querying whenever possible with this option enabled.
-          # DNS_SERVER_WEB_SERVICE_HTTP_PORT: 5380 #The TCP port number for the DNS web console over HTTP protocol.
+          DNS_SERVER_WEB_SERVICE_HTTP_PORT: 5380 #The TCP port number for the DNS web console over HTTP protocol.
           DNS_SERVER_WEB_SERVICE_HTTPS_PORT: 53443 #The TCP port number for the DNS web console over HTTPS protocol.
           # DNS_SERVER_WEB_SERVICE_ENABLE_HTTPS: false #Enables HTTPS for the DNS web console.
           # DNS_SERVER_WEB_SERVICE_USE_SELF_SIGNED_CERT: false #Enables self signed TLS certificate for the DNS web console.
@@ -61,41 +82,6 @@
           - "<<<<< Output >>>>>"
           - "{{ DNSOutput }}"
         verbosity: 0
-# Tags
+  # Tags
   tags:
     - crtDNS
-
-
-#################################################
-#
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=promgraf" --tags crtPromNodeExp
-#
-#################################################
-- name: Create BIND9 DNS server container task
-  block:
-    - name: Create techniBIND9tium DNS server container section
-      containers.podman.podman_container:
-        name: c_bind9
-        image: docker.io/
-        hostname: svr-dns
-        volumes:
-          - dnsconf:/etc/dns
-        ports:
-          - 53:53/udp #DNS service
-          - 53:53/tcp #DNS service
-        env:
-          TZ: Europe/Berlin
-          BIND9_USER: root
-        debug: false
-        restart_policy: on-failure:3
-        state: started
-      register: BIND9Output
-    - name: Print BIND9Output
-      debug:
-        msg:
-          - "<<<<< Output >>>>>"
-          - "{{ BIND9Output }}"
-        verbosity: 0
-# Tags
-  tags:
-    - crtBIND9

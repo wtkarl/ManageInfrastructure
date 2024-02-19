@@ -10,16 +10,16 @@ all:
           ansible_host: 192.168.1.210
         svr-rbm:
           ansible_host: 192.168.1.202
-        svr-test:
-          ansible_host: 192.168.1.72
+        svr-temp:
+          ansible_host: 192.168.1.191
         svr-wazuh:
           ansible_host: 192.168.1.253
-      vars: # moved to host_vars/esxi/vars
+      vars: # maybe moved to host_vars/esxi/vars
           ansible_port: 22
           ansible_connection: ansible.builtin.ssh
-          # ansible_user: myadmin
-          # ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
-          ansible_become: true
+          ansible_user: myadmin
+          ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
+          ansible_become: false
           ansible_become_user: root
           ansible_become_password: S#55ic#jA
 

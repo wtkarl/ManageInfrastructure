@@ -17,8 +17,9 @@
       become: true
   tags:
     - crtPrometheus
-    - crtPromNodeExp
-    - crtDNS
+    - crtGrafana
+    # - crtPromNodeExpPod
+    # - crtPromNodeExp
 #################################################
 #
 # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPrometheus
@@ -31,6 +32,8 @@
         name: c_prometheus
         image: docker.io/prom/prometheus
         hostname: svr-prometheus
+        # requires:
+        #   - promgraf_net
         command:
           - '--config.file=/etc/prometheus/prometheus.yml'
           - '--storage.tsdb.path=/prometheus'
@@ -58,6 +61,44 @@
 # Tags
   tags:
     - crtPrometheus
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtGrafana
+#
+#################################################
+- name: Create Alertmanager container task
+  block:
+    - name: Create Alertmanager container section
+      containers.podman.podman_container:
+        name: c_alertmgr
+        image: docker.io/prom/alertmanager
+        hostname: svr-alertmgr
+        requires:
+          # - promgraf_net
+          - c_prometheus
+        command:
+          - '--config.file=/etc/alertmanager/config.yml'
+          # - '--log-level=debug'
+        volumes:
+          - am_alertmanager:/etc/alertmanager
+          - /home/myadmin/ansible/roles/mgmt_PrometheusGrafana/files/alertmanager.yml:/etc/alertmanager/config.yml:ro
+        ports:
+          - 9093:9093
+        network:
+          - promgraf_net
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: AlertmanagerOutput
+    - name: Print AlertmanagerOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ AlertmanagerOutput }}"
+        verbosity: 0
+# Tags
+  tags:
+    - crtAlertMgr
 #################################################
 #
 # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtGrafana
@@ -94,68 +135,184 @@
 # Tags
   tags:
     - crtGrafana
-#################################################
-#
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPromNodeExp
-#
-#################################################
-- name: Create node exporter container task
-  block:
-    - name: Create node exporter container section
-      containers.podman.podman_container:
-        name: c_promnodeexp
-        image: docker.io/prom/node-exporter
-        hostname: svr-promne
-        volumes:
-          - /proc:/host/proc:ro
-          - /sys:/host/sys:ro
-          - /:/rootfs:ro
-        ports:
-          - 9100:9100
-        network:
-          - promgraf_net
-        debug: false
-        restart_policy: on-failure:3
-        state: started
-      register: PromNodeExpOutput
-    - name: Print PromNodeExpOutput
-      debug:
-        msg:
-          - "<<<<< Output >>>>>"
-          - "{{ PromNodeExpOutput }}"
-        verbosity: 0
-# Tags
-  tags:
-    - crtPromNodeExp
-#################################################
-#
-# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPromBlackBoxExp
-#
-#################################################
-- name: Create blackbox exporter container task
-  block:
-    - name: Create blackbox exporter container section
-      containers.podman.podman_container:
-        name: c_promblackboxexp
-        image: docker.io/prom/blackbox-exporter
-        hostname: svr-prombb
-        command:
-          - '--config.file=/blackbox.yml'
-        volumes:
-          - /home/myadmin/ansible/roles/mgmt_PrometheusGrafana/files/blackbox.yml:/blackbox.yml:ro
-        ports:
-          - 9115:9115
-        debug: false
-        restart_policy: on-failure:3
-        state: started
-      register: PromBlackBoxOutput
-    - name: Print PromBlackBoxOutput
-      debug:
-        msg:
-          - "<<<<< Output >>>>>"
-          - "{{ PromBlackBoxOutput }}"
-        verbosity: 0
-# Tags
-  tags:
-    - crtPromBlackBoxExp
 
+# ansible podman container collection has ready to go roles
+
+# #################################################
+# #
+# # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPromNodeExpPod
+# #
+# #################################################
+# - name: Create node exporter container task
+#   block:
+#     - name: Create node exporter container section
+#       containers.podman.podman_container:
+#         name: c_promnodeexp
+#         image: docker.io/prom/node-exporter
+#         hostname: svr-promne
+#         volumes:
+#           - /proc:/host/proc:ro
+#           - /sys:/host/sys:ro
+#           - /:/rootfs:ro
+#         ports:
+#           - 9100:9100
+#         network:
+#           - promgraf_net
+#         debug: false
+#         restart_policy: on-failure:3
+#         state: started
+#       register: PromNodeExpOutput
+#     - name: Print PromNodeExpPodOutput
+#       debug:
+#         msg:
+#           - "<<<<< Output >>>>>"
+#           - "{{ PromNodeExpPodOutput }}"
+#         verbosity: 0
+# # Tags
+#   tags:
+#     - crtPromNodeExpPod
+# #################################################
+# #
+# # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-symcon --extra-vars "v_role=promgraf" --tags crtPromNodeExp
+# #
+# #################################################
+# - name: Create node exporter task
+#   block:
+#     - name: Create node exporter section
+#       prometheus.prometheus.node_exporter:
+#         node_exporter_web_telemetry_path: "/metrics"
+#         node_exporter_web_listen_address: "0.0.0.0:9100"
+#         # node_exporter_version: "1.7.0"
+#         node_exporter_textfile_dir: "/var/lib/node_exporter"
+#         node_exporter_system_user: "node-exp"
+#         node_exporter_system_group: "node-exp"
+#         node_exporter_enabled_collectors: ["systemd", {"textfile": {"directory": "{{ node_exporter_textfile_dir }}"}}]
+#         node_exporter_binary_url: "https://github.com/{{ _node_exporter_repo }}/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+#         node_exporter_checksums_url: "https://github.com/{{ _node_exporter_repo }}/releases/download/v{{ node_exporter_version }}/sha256sums.txt"
+#         node_exporter_binary_install_dir: "/usr/local/bin"
+#         state: started
+#       register: PromNodeExpOutput
+#     - name: Print PromNodeExpOutput
+#       debug:
+#         msg:
+#           - "<<<<< Output >>>>>"
+#           - "{{ PromNodeExpOutput }}"
+#         verbosity: 0
+#     - name: Open ports in firewall task
+#       block:
+#         - name: Open ports in firewall section
+#           ansible.posix.firewalld:
+#             port: "{{ item }}"
+#             zone: public
+#             state: enabled
+#             immediate: yes
+#             permanent: yes
+#           loop:
+#             - "9100/tcp"
+# # Tags
+#   tags:
+#     - crtPromNodeExp
+# #################################################
+# #
+# # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-toolz --extra-vars "v_role=promgraf" --tags crtPromBlackBoxPodExp
+# #
+# #################################################
+# - name: Create blackbox exporter container task
+#   block:
+#     - name: Create blackbox exporter container section
+#       containers.podman.podman_container:
+#         name: c_promblackboxexp
+#         image: docker.io/prom/blackbox-exporter
+#         hostname: svr-prombb
+#         command:
+#           - '--config.file=/blackbox.yml'
+#         volumes:
+#           - /home/myadmin/ansible/roles/mgmt_PrometheusGrafana/files/blackbox.yml:/blackbox.yml:ro
+#         ports:
+#           - 9115:9115
+#         debug: false
+#         restart_policy: on-failure:3
+#         state: started
+#       register: PromBlackBoxPodOutput
+#     - name: Print PromBlackBoxPodOutput
+#       debug:
+#         msg:
+#           - "<<<<< Output >>>>>"
+#           - "{{ PromBlackBoxPodOutput }}"
+#         verbosity: 0
+# # Tags
+#   tags:
+#     - crtPromBlackBoxExpPod
+# #################################################
+# #
+# # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --limit svr-symcon --extra-vars "v_role=promgraf" --tags crtPromNodeExp
+# #
+# #################################################
+# - name: Create blackbox exporter task
+#   block:
+#     - name: Create blackbox exporter section
+#       prometheus.prometheus.blackbox_exporter:
+#         blackbox_exporter_web_listen_address: "0.0.0.0:9115"
+#         # blackbox_exporter_version: "0.24.0"
+#         node_exporter_enabled_collectors: ["systemd", {"textfile": {"directory": "{{ node_exporter_textfile_dir }}"}}]
+#         blackbox_exporter_binary_url: "https://github.com/{{ _blackbox_exporter_repo }}/releases/download/v{{ blackbox_exporter_version }}/blackbox_exporter-{{ blackbox_exporter_version }}.linux-{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}.tar.gz"
+#         blackbox_exporter_checksums_url: "https://github.com/{{ _blackbox_exporter_repo }}/releases/download/v{{ blackbox_exporter_version }}/sha256sums.txt"
+#         blackbox_exporter_binary_install_dir: "/usr/local/bin"
+#         blackbox_exporter_config_dir: "/etc"
+#         blackbox_exporter_configuration_modules: {"http_2xx": {"http": {"method": "GET", "valid_status_codes": []}, "prober": "http", "timeout": "5s"}}
+#         blackbox_exporter_group: "blackbox-exp"
+#         blackbox_exporter_user: "blackbox-exp"
+#       register: PromBlackboxExpOutput
+#     - name: Print PromBlackboxExpOutput
+#       debug:
+#         msg:
+#           - "<<<<< Output >>>>>"
+#           - "{{ PromBlackboxExpOutput }}"
+#         verbosity: 0
+# # Tags
+#   tags:
+#     - crtPromBlackboxExp
+# #################################################
+# #
+# #################################################
+# - name: Open ports for symcon task
+#   block:
+#     - name: Open ports for symcon section
+#       ansible.posix.firewalld:
+#         port: "{{ item }}"
+#         zone: public
+#         state: enabled
+#         immediate: yes
+#         permanent: yes
+#       loop:
+#         - "554/tcp"
+#         - "2000/tcp"
+#         - "2001/tcp"
+#         - "2010/tcp"
+#         - "3777/tcp"
+#         - "5544/tcp"
+#         - "8181/tcp"
+#         - "42000/tcp"
+#         - "42010/tcp"
+#         - "48181/tcp"
+#         - "443/tcp" #for IPSConnect
+#   # Tags
+#   tags:
+#     - opnPorts
+# #################################################
+# #
+# #################################################
+# - name: Check firewall task
+#   block:
+#     - name: Check firewall section
+#       ansible.builtin.shell: firewall-cmd --list-all
+#       register: FirewallCheck
+#     - name: Print FirewallCheck
+#       debug:
+#         msg:
+#           - "<<<<< Firewall settings >>>>>"
+#           - "{{ FirewallCheck.stdout_lines }}"
+#         verbosity: 0
+#   # Tags
+#   tags:
+#     - chkFirewall

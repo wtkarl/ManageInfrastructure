@@ -23,7 +23,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - "192.168.1.210:9095"
+        - "svr-toolz.home.lcl:9095"
 
   - job_name: "svr-toolz"
     metrics_path: /metrics
@@ -31,7 +31,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - "192.168.1.210:9100"
+        - "svr-toolz.home.lcl:9100"
 
   - job_name: "black box exporter metrix"
     metrics_path: /metrics
@@ -39,7 +39,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - "192.168.1.210:9115"
+        - "svr-toolz.home.lcl:9115"
 
   - job_name: "black box exporter on svr-toolz.home.lcl" # To get metrics about the exporter’s targets
     metrics_path: /probe
@@ -49,27 +49,28 @@ scrape_configs:
         - icmp
     static_configs:
       - targets:
-        - https://192.168.1.1 # dream machine
-        - https://192.168.1.200 # esxi
-        - http://192.168.1.210:9115 # toolz
-        - http://192.168.1.204:3777 # symcon
-        - https://192.168.1.202 # raspberrymatic
+        - https://ubqt.home.lcl # dream machine
+        - https://svr-esxi.home.lcl # esxi
+        - http://svr-toolz.home.lcl:9115 # toolz
+        - http://svr-symcon.home.lcl:3777 # symcon
+        - https://svr-rbm.home.lcl # raspberrymatic
+        - http://svr-dns.home.lcl:5380 # dns
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 192.168.1.210:9115  # The blackbox exporter’s real hostname:port.
+        replacement: svr-toolz.home.lcl:9115  # The blackbox exporter’s real hostname:port.
 
   - job_name: "svr-symcon"
     metrics_path: /metrics
     static_configs:
       - targets:
-        - "192.168.1.204:9100"
+        - "svr-symcon.home.lcl:9100"
 
   - job_name: "svr-symcon.podman"
     metrics_path: /metrics
     static_configs:
       - targets:
-        - "192.168.1.204:9882"
+        - "svr-symcon.home.lcl:9882"
