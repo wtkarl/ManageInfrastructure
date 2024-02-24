@@ -1,0 +1,25 @@
+---
+# tasks file for mgmt_ActiveDirectoryUsers
+- name: Add Active Directory Users tasks
+  block: 
+    - name: Add Active Directory Users section
+      microsoft.ad.user:
+        name: bob
+        firstname: Bob
+        surname: Smith
+        company: BobCo
+        password: B0bP4ssw0rd
+        state: present
+        groups:
+          set:
+          - Domain Admins
+        street: 123 4th St.
+        city: Sometown
+        state_province: IN
+        postal_code: 12345
+        country: US
+        attributes:
+          set:
+            telephoneNumber: 555-123456
+  tags:
+    - addADUser

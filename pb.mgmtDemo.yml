@@ -1,0 +1,40 @@
+---
+#
+# Author: Walter Karl
+# Date: September.2023
+# Company: 
+#
+# Prerequisites
+# for WinRM
+#   dnf install python3-pip
+#   pip3 install pywinrm (not as root)
+# for WinRM Kerberos
+#   dnf install gcc python3-devel krb5-devel krb5-workstation
+# 
+# ansible-galaxy collection install microsoft.ad
+#
+- name: Manage Demo Infrastructure
+  hosts: all # target server are selected by '-l svr-*' on CLI
+  strategy: free
+  #
+  # vars_files:
+  #   - './global_vars/defvars.yml'
+  #
+  gather_facts: true
+  #  
+  # vars:
+  #   domain: home.lcl
+  #
+  # module_defaults:
+  #   uri:
+  #     validate_certs: no
+  #     body_format: json
+  #     status_code: 200, 201
+  #     return_content: yes
+  #
+  roles:
+    ###############################################
+    #
+    ###############################################
+    - role: mgmt_ActiveDirectoryUsers
+      when: v_role == "aduser"

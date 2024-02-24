@@ -1,0 +1,5 @@
+---
+# vars file for mgmt_ActiveDirectoryUsers
+ADUserArr:
+#################################################
+  - 
