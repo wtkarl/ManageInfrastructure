@@ -6,53 +6,44 @@ all:
           ansible_host: 192.168.1.204
         svr-unifi:
           ansible_host: 192.168.1.254
-        svr-toolz:
+        svr-toolz02:
           ansible_host: 192.168.1.210
         svr-rbm:
           ansible_host: 192.168.1.202
-        svr-temp:
-          ansible_host: 192.168.1.191
         svr-wazuh:
           ansible_host: 192.168.1.253
-      vars: # maybe moved to host_vars/esxi/vars
-          ansible_port: 22
-          ansible_connection: ansible.builtin.ssh
-          ansible_user: myadmin
-          ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
-          ansible_become: false
-          ansible_become_user: root
-          ansible_become_password: S#55ic#jA
-
-
-
-
-    wazuh:
-      children:
-        clients:
-          hosts:
-            svr-symcon:
-              ansible_host: 192.168.1.204
-              ansible_port: 22
-              ansible_connection: ansible.builtin.ssh
-            svr-unifi:
-              ansible_host: 192.168.1.254
-              ansible_port: 22
-              ansible_connection: ansible.builtin.ssh
-            svr-toolz:
-              ansible_host: 192.168.1.210
-              ansible_port: 22
-              ansible_connection: ansible.builtin.ssh
-
-
-
-
+      # vars: # moved from host_vars/esxi/vars
+      #     ansible_port: 22
+      #     ansible_connection: ansible.builtin.ssh
+      #     ansible_user: myadmin
+      #     ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
+      #     ansible_become: false
+      #     ansible_become_user: root
+      #     ansible_become_password: "{{ vault_ansible_become_password }}"
     physical:
       hosts:
-        svr-vpn:
-          ansible_host: 192.168.1.72
+        svr-toolz01:
+          ansible_host: 192.168.1.10
           ansible_port: 22
-          ansible_connection: ansible.builtin.ssh
         localhost:
           ansible_host: 127.0.0.1
           ansible_port: 22
           ansible_connection: ansible.builtin.local
+
+
+    # wazuh:
+    #   children:
+    #     clients:
+    #       hosts:
+    #         svr-symcon:
+    #           ansible_host: 192.168.1.204
+    #           ansible_port: 22
+    #           ansible_connection: ansible.builtin.ssh
+    #         svr-unifi:
+    #           ansible_host: 192.168.1.254
+    #           ansible_port: 22
+    #           ansible_connection: ansible.builtin.ssh
+    #         svr-toolz:
+    #           ansible_host: 192.168.1.210
+    #           ansible_port: 22
+    #           ansible_connection: ansible.builtin.ssh

@@ -19,7 +19,7 @@
   # vars_files:
   #   - './global_vars/defvars.yml'
   #
-  gather_facts: true
+  gather_facts: false
   #  
   # vars:
   #   domain: home.lcl
@@ -39,8 +39,8 @@
     ###############################################
     - role: mgmt_SymconContainer
       when: v_role == "symcon"
-    - role: mgmt_UnifiContainer # depreciated
-      when: v_role == "unifi"
+    # - role: mgmt_UnifiContainer # depreciated because of DreamMachine
+    #   when: v_role == "unifi"
     - role: mgmt_SemaphoreContainer
       when: v_role == "semaphore"
     - role: mgmt_RunDeck
@@ -50,6 +50,7 @@
     - role: mgmt_PrometheusGrafana
       when: v_role == "promgraf"
     - role: mgmt_Infrastructure
+      # DNS server Technitium deployment
       when: v_role == "infra"
     ###############################################
     # Prometheus collection contain already roles

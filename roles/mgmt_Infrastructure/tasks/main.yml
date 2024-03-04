@@ -22,11 +22,117 @@
         - 53/tcp
         - 53/udp
         - 5300/tcp
+        - 80/tcp
+        - 443/tcp
+        - 8080/tcp
+      register: PortsOutput
+    - name: Print PortsOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ PortsOutput }}"
+        verbosity: 2
   # Tags
   tags:
     # - crtDNS
     - opnPorts
+################################################
+#
+#################################################
+- name: Create container network task
+  block:
+    - name: Create container network section
+      containers.podman.podman_network:
+        name: infra_net
+      become: true
+      register: NetworkOutput
+    - name: Print NetworkOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ NetworkOutput }}"
+        verbosity: 2
+  tags:
+    - crtInfraNet
+################################################
+#
+#################################################
+- name: Copy traefik config file task
+  block:
+    - name: Copy traefik config file section
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: 0644
+      loop:
+        - src: traefik.yml
+          dest: /root/container/traefik/traefik.yml
+        - src: traefik_prov.yml
+          dest: /root/container/traefik/traefik_prov.yml
+      register: TrfkConfOutput
+    - name: Print TrfkConfOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ TrfkConfOutput }}"
+        verbosity: 2
+  tags:
+    - cpyTrfkConf
+#################################################
+#
+# ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=infra" --tags crtDNS
+#
+#################################################
+- name: Create Traefik proxy server container task
+  block:
+    - name: Create Traefik proxy server container section
+      containers.podman.podman_container:
+        name: c_traefik
+        image: docker.io/traefik:latest
+        hostname: svr-traefik
+        # command:
+        #   - --api.insecure=true
+        #   # entrypoints, static configuratiion
+        #   - --entryPoints.web.address=:80
+        #   - --entryPoints.websecure.address=:443
+        #   # - --entryPoints.streaming.address=:1704/udp # example
+        #   #
+        #   - --providers.http.endpoint=http://esxi.home.lcl
+        #   - --providers.http.pollInterval=5s
+        #   - --providers.http.pollTimeout=5s
+        #   # - --providers.http.tls.ca=path/to/ca.crt # optional
+        #   # - --providers.http.tls.cert=path/to/foo.cert # optional public certificate
+        #   # - --providers.http.tls.key=path/to/foo.key # optional public certificate
+        #   # - --providers.http.tls.cert=path/to/foo.cert # optional private key
+        #   # - --providers.http.tls.key=path/to/foo.key # optional private key
+        #   - --providers.http.tls.insecureSkipVerify=true # default=false
 
+        # labels:
+        #   - traefik.routers.rule=Host(`svr-esxi.home.lcl`)
+        volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - /var/run/podman/podman.sock:/var/run/docker.sock:ro
+          - /root/container/traefik/traefik.yml:/traefik.yml:ro
+          - /root/container/traefik/traefik_prov.yml:/etc/traefik_prov.yml
+        ports:
+          - 80:80
+          - 443:443
+          - 8080:8080
+        network:
+          - infra_net
+        debug: false
+        restart_policy: on-failure:3
+        state: started
+      register: TraefikOutput
+    - name: Print TraefikOutput
+      debug:
+        msg:
+          - "<<<<< Output >>>>>"
+          - "{{ TraefikOutput }}"
+        verbosity: 0
+  # Tags
+  tags:
+    - crtTrfk
 #################################################
 #
 # ansible-playbook ./pb.mgmtHomeInfrastructure.yml --extra-vars "v_role=infra" --tags crtDNS
