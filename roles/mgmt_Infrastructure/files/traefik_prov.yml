@@ -1,15 +1,39 @@
 http:
-  tls:
-    insecureSkipVerify: true
   routers: 
-    allbackendRouter:
-      rule: HostRegexp(`senseg{id:[0-9][0-9]}`)
-      service: allbackend
+    sensegXXRouter:
+      entryPoints:
+        - 'web'
+        # - 'websecure'
+      rule: "Host(`senseg.demo.lab`)"
+      service: sensegXX
+    rbmRouter:
+      entryPoints:
+        - 'web'
+      rule: "Host(`svr-rbm.home.rp.lcl`)"
+      service: rbm
+    symconRouter:
+      entryPoints:
+        - 'web'
+      # rule: "HostRegexp(`svr-symcon.home.rp.lcl{all:.*}`) && Path(`/console{all:.*}`)"
+      rule: "Host(`svr-symcon.home.rp.lcl`)"
+      service: symcon
   services:
-    allbackend:
+    sensegXX:
       loadBalancer:
         servers:
-          - url: 'https:/192.168.100.50'
-          - url: 'https:/192.168.100.52'
-          # - url: 'https:/senseg01.demo.lab'
-          # - url: 'https:/senseg02.demo.lab'
+          - url: "https://senseg01.demo.lab/"
+          - url: "https://senseg02.demo.lab/"
+        serversTransport: ignoreCertTransport
+    rbm:
+      loadBalancer:
+        servers:
+          - url: 'https://svr-rbm.home.lcl'
+        serversTransport: ignoreCertTransport
+    symcon:
+      loadBalancer:
+        servers:
+          - url: "http://svr-symcon.home.lcl:3777/console/"
+        
+  serversTransports:
+    ignoreCertTransport:
+      insecureSkipVerify: true

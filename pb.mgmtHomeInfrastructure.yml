@@ -51,6 +51,7 @@
       when: v_role == "promgraf"
     - role: mgmt_Infrastructure
       # DNS server Technitium deployment
+      # Traefik reverse proxy & load balancer deployment
       when: v_role == "infra"
     ###############################################
     # Prometheus collection contain already roles

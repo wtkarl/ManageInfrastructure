@@ -4,27 +4,40 @@ all:
       hosts:
         svr-symcon:
           ansible_host: 192.168.1.204
-        svr-unifi:
-          ansible_host: 192.168.1.254
-        svr-toolz02:
+        # svr-unifi:  # is now UDM
+        #   ansible_host: 192.168.1.254
+        svr-autotoolz:
           ansible_host: 192.168.1.210
         svr-rbm:
           ansible_host: 192.168.1.202
         svr-wazuh:
           ansible_host: 192.168.1.253
-      # vars: # moved from host_vars/esxi/vars
-      #     ansible_port: 22
-      #     ansible_connection: ansible.builtin.ssh
-      #     ansible_user: myadmin
+      vars: # moved from host_vars/esxi/vars
+          ansible_port: 22
+          ansible_connection: ansible.builtin.ssh
+          ansible_user: myadmin
       #     ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
       #     ansible_become: false
       #     ansible_become_user: root
       #     ansible_become_password: "{{ vault_ansible_become_password }}"
     physical:
       hosts:
-        svr-toolz01:
+        svr-esxi:
+          ansible_host: 192.168.1.200
+          ansible_port: 22
+        svr-infratoolz:
           ansible_host: 192.168.1.10
           ansible_port: 22
+      vars: # moved from host_vars/esxi/vars
+          ansible_port: 22
+          ansible_connection: ansible.builtin.ssh
+          ansible_user: myadmin
+      #     ansible_ssh_private_key_file: /home/myadmin/.ssh/id_rsa
+      #     ansible_become: false
+      #     ansible_become_user: root
+      #     ansible_become_password: "{{ vault_ansible_become_password }}"
+    special:
+      hosts:
         localhost:
           ansible_host: 127.0.0.1
           ansible_port: 22
